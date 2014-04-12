@@ -1,0 +1,161 @@
+/*--------------------------------------------------------------------------*/
+/*                                                                          */
+/*   Main-Module   : thread                                                 */
+/*                                                                          */
+/*   Version       : V1.00                                                  */
+/*                                                                          */
+/*   Date          : 15.10.92                                               */
+/*                                                                          */
+/*   Written       : MH                                                     */
+/*                                                                          */
+/*   Dependency    :                                                        */
+/*                                                                          */
+/*--------------------------------------------------------------------------*/
+
+Description
+===========
+
+Introduces following types:
+	1.	THREAD:
+		Hidden thread handling, with possiblity to hand over data to a thread
+
+
+Class 'THREAD'
+!!!!!!!!!!!!!!
+
+    Class Directory
+    ===============
+
+    Constructors
+    ------------
+            THREAD	();
+            THREAD	(THREADFUNC);
+            THREAD	(THREADFUNC, BOOL);
+    		THREAD	(void *, unsigned, THREADFUNCDATA);
+    		THREAD	(void *, unsigned, THREADFUNCDATA, BOOL);
+
+    Public functions
+    ----------------
+    		virtual USHORT Start (THREADFUNC func=NULL);
+    		virtual USHORT Start (void *adata, unsigned adatalen,
+    							  THREADFUNCDATA func=NULL);
+    		void Suspend	();
+    		void Resume		();
+    		void StackSize	(unsigned size);
+    		BOOL 	Running ();
+    		BOOL 	Started ();
+    		USHORT	Error	();
+    		TID		Tid		();
+    		PID		Pid		();
+
+    Protected members
+    -----------------
+    		THREADFUNC		threadfunc;
+    		THREADFUNC		starter;
+    		THREADFUNCDATA	threadfuncdata;
+    		
+    		BOOL			running;
+    		BOOL			started;
+    		void			*data;
+    		unsigned		datalen;
+    		USHORT			error;
+
+	Public members
+	--------------
+    		USHORT	error;
+    			Returns Errorcode of last method. Only useful after constructing
+    			with parameter start=TRUE.
+    			
+
+	Types
+	-----
+			typedef void (*THREADFUNC	 ) () ;
+			typedef void (*THREADFUNCDATA) (void *, unsigned) ;
+    		
+    Class reference
+    ===============
+
+    Constructors
+    ------------
+            THREAD	();
+				catches data of an actually running thread for further reference
+
+            THREAD	(THREADFUNC f);
+            THREAD	(THREADFUNC f, BOOL start);
+				Prepares a new thread for starting and associates function 'f'
+				with this thread. If start is true the thread is started on
+				the spot. If it is ommited, a value of false is supposed.
+				If f is not known up to now (start=FALSE), you can pass a value
+				of NULL.
+
+    		THREAD	(void *d, unsigned l, THREADFUNCDATA f);
+    		THREAD	(void *d, unsigned l, THREADFUNCDATA f, BOOL start);
+    			Same as above with two differences:
+    				1.	f is of type THREADFUNCDATA.
+    				2.	d points to l bytes of data, which will be sent to f
+    					when started. d can be NULL, if it is not known by
+    					now.
+    				
+    Public functions
+    ----------------
+    		virtual USHORT Start (THREADFUNC func=NULL);
+    		virtual USHORT Start (void *adata, unsigned adatalen,
+    							  THREADFUNCDATA func=NULL);
+				Starts a constructed thread. If func resp. adata are NULL
+				the values passed to the Constructor are used.
+				
+    		void Suspend	();
+    			Suspends the execution of a running thread.
+    			
+    		void Resume		();
+    			Resumes a suspended thread.
+    			
+    		void StackSize	(unsigned size);
+    			Sets stacksize of a thread. Has to be called after constructor
+    			(parameter start = false) and before calling Start.
+    			
+    		BOOL 	Running ();
+				Returns TRUE if thread is actually running by now.
+				ATTENTION : Works only if you use thread::Suspend instead of
+							DosSuspendThread.
+							
+    		BOOL 	Started ();
+    			Returns TRUE if thread was started at any time. If true
+    			this thread can be revived by calling Resume.
+    			
+    		TID		Tid		();
+    			Returns threadid of thread. Only after it was started.
+    			
+    		PID		Pid		();
+    			Returns processid of thread. Only after it was constructed.
+
+    Protected members
+    -----------------
+    		THREADFUNC		threadfunc;
+    			Pointer to function to call if no data is to be passed
+
+    		THREADFUNCDATA	threadfuncdata;
+    			Pointer to function to call if data is to be passed
+
+    		THREADFUNC		starter;
+    			Has to be changed by sons of call 'thread' if they want
+    			special things to happen before their threadfunction gets
+    			called. It is this 'starter' that is called by Start when
+    			creating the new thread. starter should call threadfunc,
+    			threadfuncdata or a own member of the son.
+    		
+    		BOOL			running;
+    			TRUE if process is running (see also Running).
+    			
+    		BOOL			started;
+    			TRUE if process was started.
+    			
+    		void			*data;
+    			Pointer to data to pass to thread
+    			
+    		unsigned		datalen;
+    			Length of userdata
+    			
+    		USHORT			error;
+    			Last errorcode (see also Error).
+
